@@ -1,0 +1,122 @@
+import json
+import openai
+import pandas as pd
+import yaml
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Step 1: Parse the master resume and cover letter into structured formats
+resume_data = {
+    "personal_information": {
+        "name": "Geoff Mosher",
+        "email": "iamgeoffmosher@gmail.com",
+        "phone": "9178284122",
+        "linkedin": "https://www.linkedin.com/in/geoffmosher",
+        "github": "https://github.com/geoffmosher"
+    },
+    "professional_experience": [
+        {
+            "position": "Associate Director, Product Development",
+            "company": "Verizon",
+            "dates": "07/2016 - 12/2024",
+            "location": "Boston, MA",
+            "achievements": [
+                "Led product development for Family Money app, driving $X in revenue.",
+                "Developed technical documentation and user flow diagrams, supporting seamless deployment.",
+                "Integrated analytics to track engagement and optimize user experience."
+            ]
+        },
+        # Add additional experiences here...
+    ],
+    "education": [
+        {
+            "degree": "Bachelor's in Journalism",
+            "institution": "Indiana University",
+            "year": 2002
+        }
+    ],
+    "skills": ["Product Development", "UX Design", "Team Leadership", "Analytics", "SaaS"],
+    "projects": [
+        {
+            "name": "Fast Finger Mobile Game",
+            "description": "Refined and positioned the game for market success, achieving #1 ranking in 60 countries.",
+            "impact": "Increased downloads by X% and engagement by Y%."
+        }
+    ]
+}
+
+cover_letter_template = {
+    "greeting": "Dear {hiring_manager},",
+    "introduction": "I'm excited to apply for the {position_title} role at {company_name}. With over 13 years of experience in digital product development and leadership, I've successfully {key_achievement}.",
+    "body": [
+        "At {previous_company}, I led {specific_project}, resulting in {quantifiable_result}.",
+        "My expertise in {skills} has allowed me to {impact_statement}."
+    ],
+    "closing": "I would welcome the opportunity to bring my skills to {company_name} and contribute to {company_mission}. Thank you for considering my application.",
+    "signature": "Best regards,\nGeoff Mosher"
+}
+
+# Save resume and cover letter template as YAML
+with open("resume.yaml", "w") as resume_file:
+    yaml.dump(resume_data, resume_file)
+
+with open("cover_letter.yaml", "w") as cover_letter_file:
+    yaml.dump(cover_letter_template, cover_letter_file)
+
+# Step 2: Automate job description parsing and customization
+
+def generate_customized_cover_letter(job_description, company_name, position_title):
+    # Example using OpenAI for tailoring the text
+    openai.api_key = "your-openai-api-key"
+    prompt = (
+        f"Based on the following job description, customize the cover letter: \n{job_description}\n"
+        f"Make it engaging, concise, and aligned with this position at {company_name} for {position_title}."
+    )
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=500
+    )
+    return response["choices"][0]["text"].strip()
+
+# Step 3: Selenium setup for applying on Workday and Greenhouse
+
+def apply_to_job(job_link, customized_resume, customized_cover_letter):
+    driver = webdriver.Chrome()  # Ensure chromedriver is installed and in PATH
+    driver.get(job_link)
+
+    try:
+        # Example selectors, these need to be tailored per platform
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "apply-button"))).click()
+
+        # Upload resume
+        resume_upload = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "resume-upload")))
+        resume_upload.send_keys(customized_resume)
+
+        # Upload cover letter
+        cover_letter_upload = driver.find_element(By.ID, "cover-letter-upload")
+        cover_letter_upload.send_keys(customized_cover_letter)
+
+        # Submit application
+        driver.find_element(By.ID, "submit-button").click()
+    except Exception as e:
+        print(f"Error during application: {e}")
+    finally:
+        driver.quit()
+
+# Example usage
+job_description = """
+We are seeking a Product Manager to lead innovative projects in SaaS development.
+Key responsibilities include...
+"""
+
+company_name = "Tech Innovators Inc."
+position_title = "Product Manager"
+
+customized_cover_letter = generate_customized_cover_letter(job_description, company_name, position_title)
+customized_resume = "resume.yaml"  # Placeholder for a dynamically generated resume file
+
+apply_to_job("https://www.example.com/job-link", customized_resume, customized_cover_letter)
