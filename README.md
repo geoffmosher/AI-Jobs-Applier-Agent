@@ -24,6 +24,6 @@ Uses the following
 - OpenAI for text customization (e.g., adapting templates to job descriptions)
 
 4. Pipeline Overview
-- Input: Job descriptions, ymaster resume, and a dynamic cover letter template
+- Input: Job descriptions, master resume, and a dynamic cover letter template
 - Processing: Parse job descriptions, tailor resumes/letters, and save drafts
 - Output: Automatically apply on supported portals (or notify you to confirm applications)
