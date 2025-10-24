@@ -1,6 +1,6 @@
 # AI-Jobs-Applier-Agent
 
-Python-based workflow that generates tailord resumes and cover letters and also pre-fills application forms to save effort and time
+Python-based workflow that generates tailored resumes and cover letters and also pre-fills application forms to save effort and time
 
 LLM: GPT4o
 
